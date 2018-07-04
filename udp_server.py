@@ -12,13 +12,14 @@ Sensors = namedtuple('Sensors', 'message_type light temperature humidity client_
 
 while True:
     raw_data, addr = serverSock.recvfrom(500)
+    print(raw_data)
     
-    fmt_1 = '4sfffc'
+    fmt_1 = '4sfffB'
     data = Sensors._make(unpack(fmt_1, raw_data[:17]) + (b'',))
     
     l = int(data.client_name_length)
     fmt_2 = '<' + str(l) + 's'
-    client_name = unpack(fmt_2, raw_data[17:17+l])[0]
+    client_name = unpack(fmt_2, raw_data[17:])[0]
     data = data._replace(client_name=client_name)
     print(data)
     
