@@ -2,13 +2,18 @@ import socket
 from struct import *
 from collections import namedtuple
 
-server_ip = '192.168.1.32'
+server_ip = '0.0.0.0'
 server_port = 1234
 
 serverSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 serverSock.bind((server_ip, server_port))
 
-Sensors = namedtuple('Sensors', 'message_type light temperature humidity client_name_length client_name')
+Sensors = namedtuple('Sensors', ['message_type',
+                                 'light',
+                                 'temperature',
+                                 'humidity',
+                                 'client_name_length',
+                                 'client_name'])
 
 while True:
     raw_data, addr = serverSock.recvfrom(500)
@@ -22,4 +27,4 @@ while True:
     client_name = unpack(fmt_2, raw_data[17:])[0]
     data = data._replace(client_name=client_name)
     print(data)
-    
+
