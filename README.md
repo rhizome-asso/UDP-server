@@ -29,7 +29,7 @@ A simple, fixed-length message format is expected. Fields should appear in the o
 * `client name`  
   type: `char[]`  
   size: variable  
-  The name of the client sending the message, is at most 255 characters long and terminated by \0. The `client name length` field defines its length.
+  The name of the client sending the message, is at most 255 characters long. The `client name length` field defines its length.
 
 The client name is set to be the last field to allow for easy data unpacking.
 
