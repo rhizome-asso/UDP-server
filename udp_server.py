@@ -1,6 +1,31 @@
 import socket
+import os.path
+import csv
 from struct import *
 from collections import namedtuple
+
+def decode_data(raw_data):
+    fmt_1 = 'fffB'
+    data = Sensors._make(('DATA',) + unpack(fmt_1, raw_data[:13]) + (b'',))
+    
+    l = int(data.client_name_length)
+    fmt_2 = '<' + str(l) + 's'
+    client_name = (unpack(fmt_2, raw_data[13:])[0]).decode('utf-8')
+    data = data._replace(client_name=client_name)
+    return data
+
+
+def write_csv(data):
+    file_name = 'Sensor_data/' + str(data.client_name) + '.csv'
+    if os.path.isfile(file_name):
+        with open(file_name, 'a') as file:
+            file_writer = csv.writer(file, delimiter=',')
+            file_writer.writerow(data)
+    else:
+        with open(file_name, 'w') as file:
+            file_writer = csv.writer(file, delimiter=',')
+            file_writer.writerow(data)
+
 
 server_ip = '0.0.0.0'
 server_port = 1234
@@ -19,12 +44,12 @@ while True:
     raw_data, addr = serverSock.recvfrom(500)
     print(raw_data)
     
-    fmt_1 = '4sfffB'
-    data = Sensors._make(unpack(fmt_1, raw_data[:17]) + (b'',))
-    
-    l = int(data.client_name_length)
-    fmt_2 = '<' + str(l) + 's'
-    client_name = unpack(fmt_2, raw_data[17:])[0]
-    data = data._replace(client_name=client_name)
-    print(data)
+    msgtype_fmt = '4s'
+    msgtype = (unpack(msgtype_fmt, raw_data[:4])[0]).decode('utf-8')
+    if msgtype == 'DATA':
+        data = decode_data(raw_data[4:])
+        print(data)
+        write_csv(data)
+    else:
+        print('%s message type unknown' %msgtype)
 
