@@ -1,10 +1,11 @@
 import socket
 import os.path
 import csv
-import time
-import datetime
+import yaml
 from struct import *
 from collections import namedtuple
+from datetime import datetime
+
 
 def decode_data(raw_data, time):
     fmt_1 = 'fffB'
@@ -18,7 +19,7 @@ def decode_data(raw_data, time):
 
 
 def write_csv(data):
-    file_name = 'Sensor_data/' + str(data.client_name) + '.csv'
+    file_name = str(config['data_dir']) + str(data.client_name) + '.csv'
     if os.path.isfile(file_name):
         with open(file_name, 'a') as file:
             file_writer = csv.writer(file, delimiter=',')
@@ -30,8 +31,15 @@ def write_csv(data):
             file_writer.writerow(data)
 
 
+
+with open('config.yml', 'r') as stream:
+    try:
+        config = yaml.safe_load(stream)
+    except yaml.YAMLError as exc:
+        print(exc)
+
 server_ip = '0.0.0.0'
-server_port = 1234
+server_port = config['UDP_port']
 
 serverSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 serverSock.bind((server_ip, server_port))
@@ -46,8 +54,7 @@ Sensors = namedtuple('Sensors', ['message_type',
 while True:
     raw_data, addr = serverSock.recvfrom(500)
     print(raw_data)
-    ts = time.time()
-    st = datetime.datetime.fromtimestamp(ts).strftime('%d-%m-%Y %H:%M:%S')
+    st = datetime.now().strftime('%d-%m-%Y %H:%M:%S')
     print(st)
     
     msgtype_fmt = '4s'
