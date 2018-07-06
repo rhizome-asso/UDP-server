@@ -1,12 +1,14 @@
 import socket
 import os.path
 import csv
+import time
+import datetime
 from struct import *
 from collections import namedtuple
 
-def decode_data(raw_data):
+def decode_data(raw_data, time):
     fmt_1 = 'fffB'
-    data = Sensors._make(('DATA',) + unpack(fmt_1, raw_data[:13]) + (b'',))
+    data = Sensors._make(('DATA',) + unpack(fmt_1, raw_data[:13]) + (b'',time))
     
     l = int(data.client_name_length)
     fmt_2 = '<' + str(l) + 's'
@@ -24,6 +26,7 @@ def write_csv(data):
     else:
         with open(file_name, 'w') as file:
             file_writer = csv.writer(file, delimiter=',')
+            file_writer.writerow(Sensors._fields)
             file_writer.writerow(data)
 
 
@@ -38,16 +41,19 @@ Sensors = namedtuple('Sensors', ['message_type',
                                  'temperature',
                                  'humidity',
                                  'client_name_length',
-                                 'client_name'])
+                                 'client_name','time'])
 
 while True:
     raw_data, addr = serverSock.recvfrom(500)
     print(raw_data)
+    ts = time.time()
+    st = datetime.datetime.fromtimestamp(ts).strftime('%d-%m-%Y %H:%M:%S')
+    print(st)
     
     msgtype_fmt = '4s'
     msgtype = (unpack(msgtype_fmt, raw_data[:4])[0]).decode('utf-8')
     if msgtype == 'DATA':
-        data = decode_data(raw_data[4:])
+        data = decode_data(raw_data[4:], st)
         print(data)
         write_csv(data)
     else:
