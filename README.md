@@ -10,14 +10,6 @@ A simple, fixed-length message format is expected. Fields should appear in the o
   type: `char[]`  
   size: 4 Bytes  
   A message type name. For now we only support `DATA` messages.
-* `number lights` 
-  type: `char`  
-  size: 1 Byte  
-  Defines how many light sensors are used.
-* `light`  
-  type: `float`  
-  size: 4 Bytes  
-  A floating point value representing light intensity as measured by a photodiode (or other photo sensor) and interpreted by the client. Each of the light sensors (number specified in number lights) is represented as a float.
 * `temperature`  
   type: `float`  
   size: 4 Bytes  
@@ -26,10 +18,18 @@ A simple, fixed-length message format is expected. Fields should appear in the o
   type: `float`  
   size: 4 Bytes  
   A floating point value representing humidity or soil moisture as measured by a sensor and interpreted by the client.  
+* `number lights` 
+  type: `char`  
+  size: 1 Byte  
+  Defines how many light sensors are used.
 * `client name length`  
   type: `char`  
   size: 1 Byte  
   Defines the length of the client name character string
+* `lights`  
+  type: `float`  
+  size: 4 Bytes  
+  A floating point value representing light intensity as measured by a photodiode (or other photo sensor) and interpreted by the     client. Each of the light sensors (number specified in number lights) is represented as a float.
 * `client name`  
   type: `char[]`  
   size: variable  
@@ -39,6 +39,6 @@ The client name is set to be the last field to allow for easy data unpacking.
 
 ## Data processing
 
-When the message buffer is read from the socket, the first 4 bytes are unpacked, then the type field is checked and the appropriate processing method is called. The number of light sensors is decoded and the corresponding bytes are unpacked. The next 9 bytes are unpacked into the respective fields and Python types. Then the character string representing the name is read up to the advertised name length. The message receipt time is recorded.
+When the message buffer is read from the socket, the first 4 bytes are unpacked, then the type field is checked and the appropriate processing method is called. The next 10 bytes are unpacked into the respective fields and Python types. Then the decoded number of light sensors is unpacked.  Then the character string representing the name is read up to the advertised name length. The message receipt time is recorded.
 
 Finally, the collected data is written in CSV string format into a file with name being the client name. If the file does not exist yet, it is created and the CSV header row is first written. Each received and decoded message is appended as an additional CSV row into the file.
