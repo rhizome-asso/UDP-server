@@ -2,6 +2,11 @@
 
 A simple UDP based log server for sensor devices. The server listens on a predefined port for incoming messages and stores them in files.
 
+## Requirements
+
+* Python `3.5.3`
+* Python3-yaml `3.12-1`
+
 ## UDP message format
 
 A simple, fixed-length message format is expected. Fields should appear in the order listed below and occupy a predefined length in number of bytes. The `client name` field is a character string, which is terminated by NULL (\0) and with a length given by the `client name length` field.
