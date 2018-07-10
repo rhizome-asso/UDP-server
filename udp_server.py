@@ -2,18 +2,25 @@ import socket
 import os.path
 import csv
 import yaml
+import numpy as np
 from struct import *
 from collections import namedtuple
 from datetime import datetime
 
 
 def decode_data(raw_data, time):
-    fmt_1 = 'fffB'
-    data = Sensors._make(('DATA',) + unpack(fmt_1, raw_data[:13]) + (b'',time))
+    fmt_1 = 'B'
+    num_lights = unpack(fmt_1, raw_data[:1])[0]
+    fmt_2 = 'f'
+    light_array = np.zeros(num_lights)
+    for i in range(num_lights):
+        light_array[i] = unpack(fmt_2, raw_data[i*4+1:i*4+5])[0]
+    fmt_3 = 'ffB'
+    data = Sensors._make(('DATA',light_array) + unpack(fmt_3, raw_data[num_lights*4+1:num_lights*4+10]) + (b'',time))
     
     l = int(data.client_name_length)
-    fmt_2 = '<' + str(l) + 's'
-    client_name = (unpack(fmt_2, raw_data[13:])[0]).decode('utf-8')
+    fmt_4 = '<' + str(l) + 's'
+    client_name = (unpack(fmt_4, raw_data[num_lights*4+10:])[0]).decode('utf-8')
     data = data._replace(client_name=client_name)
     return data
 
